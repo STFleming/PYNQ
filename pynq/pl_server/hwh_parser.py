@@ -288,7 +288,7 @@ class _HWHABC(metaclass=abc.ABCMeta):
         else:
             return False
 
-    def _populate_from_bdc_hwh(self, bdc_name:str, bdc_path:str)->None:
+    def _populate_from_bdc_hwh(self, bdc_name:str, bdc_path:str, bdcmeta=None)->None:
         """
         From a bdc hwh file populate the IP cores
         """
@@ -298,34 +298,41 @@ class _HWHABC(metaclass=abc.ABCMeta):
 
             for i in bdc_root.iter('MODULE'):
                 for b_itf in i.iter('BUSINTERFACE'):
-                     extern_bus_ref = b_itf.get('BUSNAME')
-                     external_intf_name = self._get_extern_bus_from_ref(extern_bus_ref, bdc_root) 
-                     internal_intf_name = b_itf.get('NAME')
+                    extern_bus_ref = b_itf.get('BUSNAME')
+                    external_intf_name = self._get_extern_bus_from_ref(extern_bus_ref, bdc_root) 
+                    internal_intf_name = b_itf.get('NAME')
 
-                     full_name = bdc_name + "/" + i.get('INSTANCE') + "/" + external_intf_name 
-                     self.ip_dict[full_name] = {} 
-                     self.ip_dict[full_name]['fullpath'] = full_name 
-                     self.ip_dict[full_name]['type'] = i.get('VLNV') 
-                     self.ip_dict[full_name]['bdtype'] = i.get('BDTYPE') 
-                     self.ip_dict[full_name]['state'] = None 
+                    full_name = bdc_name + "/" + i.get('INSTANCE') + "/" + external_intf_name 
+                    self.ip_dict[full_name] = {} 
+                    self.ip_dict[full_name]['fullpath'] = full_name 
+                    self.ip_dict[full_name]['type'] = i.get('VLNV') 
+                    self.ip_dict[full_name]['bdtype'] = i.get('BDTYPE') 
+                    self.ip_dict[full_name]['state'] = None 
                      
-                     base_addr = 0
-                     high_addr = 0
-                     for p in i.iter('PARAMETER'):
-                         if p.get('NAME') == "C_BASEADDR":
-                             base_addr = int(p.get('VALUE'), 16)
-                         if p.get('NAME') == "C_HIGHADDR":
-                             high_addr = int(p.get('VALUE'), 16)
+                    base_addr = 0
+                    high_addr = 0
+                    for p in i.iter('PARAMETER'):
+                        if p.get('NAME') == "C_BASEADDR":
+                            base_addr = int(p.get('VALUE'), 16)
+                        if p.get('NAME') == "C_HIGHADDR":
+                            high_addr = int(p.get('VALUE'), 16)
 
-                     addr_range = high_addr - base_addr + 1
-                     self.ip_dict[full_name]['addr_range'] = addr_range
-                     self.ip_dict[full_name]['phys_addr'] = base_addr
+                    addr_range = high_addr - base_addr + 1
+                    self.ip_dict[full_name]['addr_range'] = addr_range
+                    self.ip_dict[full_name]['phys_addr'] = base_addr
 
-                     self.ip_dict[full_name]['mem_id'] = external_intf_name 
-                     self.ip_dict[full_name]['memtype'] = None
-                     self.ip_dict[full_name]['gpio'] = { }
-                     self.ip_dict[full_name]['interrupts'] = { }
-                     self.ip_dict[full_name]['parameters'] = { }
+                    self.ip_dict[full_name]['mem_id'] = external_intf_name 
+                    self.ip_dict[full_name]['memtype'] = None
+                    self.ip_dict[full_name]['gpio'] = { }
+                    self.ip_dict[full_name]['interrupts'] = { }
+                    self.ip_dict[full_name]['parameters'] = { }
+
+                      
+                    if bdcmeta is not None:
+                        regmaps = bdc_json_meta["ip"]["/"+i.get('INSTANCE')]["interfaces"][internal_intf_name]["regmap"]
+                        for regmap in regmaps:
+                            self.ip_dict[full_name]['registers'] = regmaps[regmap]["registers"] 
+                        self.ip_dict[full_name]["parameters"] = bdc_json_meta["ip"]["/"+i.get('INSTANCE')]["parameters"]
         else:
             print("Warning also unable to find BDC HWH file "+bdc_name+".hwh so the IP modules contained within the BDC region cannot be determined\n")
 
@@ -347,12 +354,8 @@ class _HWHABC(metaclass=abc.ABCMeta):
                     bdc_json_meta_file = open(bdc_json_meta_filename, "r")
                     bdc_json_meta = json.load(bdc_json_meta_file)
 
-                    self._populate_from_bdc_hwh(bdc_name, self.tmpdir + "/" + bdc_name + ".hwh")
+                    self._populate_from_bdc_hwh(bdc_name, self.tmpdir + "/" + bdc_name + ".hwh", bdc_json_meta)
 
-                    regmaps = bdc_json_meta["ip"]["/"+i.get('INSTANCE')]["interfaces"][internal_intf_name]["regmap"]
-                    for regmap in regmaps:
-                        self.ip_dict[full_name]['registers'] = regmaps[regmap]["registers"] 
-                    self.ip_dict[full_name]["parameters"] = bdc_json_meta["ip"]["/"+i.get('INSTANCE')]["parameters"]
                             
                     bdc_json_meta_file.close()
                 else:
