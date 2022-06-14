@@ -45,6 +45,8 @@ from .utils import _ExtensionsManager
 
 from pynq._3rdparty import ert
 
+from pynqmetadata.frontends import HwhFrontend 
+from .metadata.ip_dict_view import IpDictView
 
 __author__ = "Yun Rock Qu"
 __copyright__ = "Copyright 2016, Xilinx"
@@ -338,6 +340,10 @@ class Overlay(Bitstream):
         self._register_drivers()
 
         self.parser = self.device.get_bitfile_metadata(self.bitfile_name)
+
+        hwh_file = self.bitfile_name.replace(".bit", ".hwh")
+        self._metadata = HwhFrontend(hwh_file).metadata
+        self.md_ip_dict = IpDictView(self._metadata)
 
         self.ip_dict = self.gpio_dict = self.interrupt_controllers = \
             self.interrupt_pins = self.hierarchy_dict = dict()
