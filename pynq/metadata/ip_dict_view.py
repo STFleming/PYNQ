@@ -1,6 +1,13 @@
-from pynqmetadata.errors import FeatureNotYetImplemented
-from pynqmetadata import Module, SubordinatePort, ProcSysCore
 from typing import Dict
+
+import json
+from pynqmetadata import Module, ProcSysCore, SubordinatePort
+from pynqmetadata.errors import FeatureNotYetImplemented
+
+from ..utils import ReprDict
+
+def _default_repr(obj):
+    return repr(obj)
 
 class IpDictView:
     """
@@ -17,7 +24,7 @@ class IpDictView:
         for core in self._md.cores.values():
             for port in core.ports.values():
                 if isinstance(port, SubordinatePort):
-                    if (len(port.registers) > 0):
+                    if len(port.registers) > 0:
                         repr_dict[core.name] = {}
                         repr_dict[core.name]["type"] = core.vlnv.str
                         repr_dict[core.name]["mem_id"] = port.name
@@ -28,30 +35,40 @@ class IpDictView:
                             repr_dict[core.name]["parameters"][param.name] = param.value
                         repr_dict[core.name]["registers"] = {}
 
+                        repr_dict[core.name]["driver"] = None
+                        repr_dict[core.name]["device"] = None
+                        if "driver" in port._ext:
+                            repr_dict[core.name]["driver"] =  port._ext["driver"]
+                            repr_dict[core.name]["device"] = port._ext["device"]
+
                         if not isinstance(port.parent(), ProcSysCore):
                             for reg in port.registers.values():
                                 repr_dict[core.name]["registers"][reg.name] = {}
                                 repr_dict[core.name]["registers"][reg.name][
                                     "address_offset"
                                 ] = reg.offset
-                                repr_dict[core.name]["registers"][reg.name]["width"] = reg.width
+                                repr_dict[core.name]["registers"][reg.name][
+                                    "width"
+                                ] = reg.width
                                 repr_dict[core.name]["registers"][reg.name][
                                     "description"
                                 ] = reg.description
-                                repr_dict[core.name]["registers"][reg.name]["fields"] = {}
+                                repr_dict[core.name]["registers"][reg.name][
+                                    "fields"
+                                ] = {}
                                 for f in reg.bitfields.values():
-                                    repr_dict[core.name]["registers"][reg.name]["fields"][
-                                        f.name
-                                    ] = {}
-                                    repr_dict[core.name]["registers"][reg.name]["fields"][
-                                        f.name
-                                    ]["bit_offset"] = f.LSB
-                                    repr_dict[core.name]["registers"][reg.name]["fields"][
-                                        f.name
-                                    ]["bit_width"] = (f.MSB - f.LSB)
-                                    repr_dict[core.name]["registers"][reg.name]["fields"][
-                                        f.name
-                                    ]["description"] = f.description
+                                    repr_dict[core.name]["registers"][reg.name][
+                                        "fields"
+                                    ][f.name] = {}
+                                    repr_dict[core.name]["registers"][reg.name][
+                                        "fields"
+                                    ][f.name]["bit_offset"] = f.LSB
+                                    repr_dict[core.name]["registers"][reg.name][
+                                        "fields"
+                                    ][f.name]["bit_width"] = (f.MSB - f.LSB)
+                                    repr_dict[core.name]["registers"][reg.name][
+                                        "fields"
+                                    ][f.name]["description"] = f.description
                             repr_dict[core.name]["state"] = None
                             repr_dict[core.name]["bdtype"] = None
                             repr_dict[core.name]["phys_addr"] = port.baseaddr
@@ -79,8 +96,8 @@ class IpDictView:
         for ip in self.ip_dict:
             yield ip
 
-    def _repr_json_(self)->Dict:
-        return self.ip_dict
+    def _repr_json_(self) -> Dict:
+        return json.loads(json.dumps(self.ip_dict, default=_default_repr))
 
     def __getitem__(self, key: str) -> None:
         return self.ip_dict[key]
