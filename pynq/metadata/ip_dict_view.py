@@ -39,6 +39,7 @@ class IpDictView:
                         repr_dict[core.name]["device"] = None
                         if "driver" in port._ext:
                             repr_dict[core.name]["driver"] =  port._ext["driver"]
+                        if "device" in port._ext:
                             repr_dict[core.name]["device"] = port._ext["device"]
 
                         if not isinstance(port.parent(), ProcSysCore):
@@ -81,6 +82,13 @@ class IpDictView:
                 repr_dict[core.name]["gpio"] = {}
                 repr_dict[core.name]["interrupts"] = {}
                 repr_dict[core.name]["parameters"] = {}
+                repr_dict[core.name]["driver"] = None
+                repr_dict[core.name]["device"] = None
+                if "driver" in core._ext:
+                    repr_dict[core.name]["driver"] =  core._ext["driver"]
+                if "device" in core._ext:
+                    repr_dict[core.name]["device"] = core._ext["device"]
+
                 for param in core.parameters.values():
                     repr_dict[core.name]["parameters"][param.name] = param.value
 

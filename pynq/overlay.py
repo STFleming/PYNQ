@@ -43,7 +43,7 @@ from .bitstream import Bitstream
 from .gpio import GPIO
 from .interrupt import Interrupt
 from .metadata.append_drivers_pass import bind_drivers_to_metadata
-from .metadata.ip_dict_view import IpDictView
+from .metadata.runtime_metadata import RuntimeMetadata 
 from .mmio import MMIO
 from .ps import Clocks
 from .registers import RegisterMap
@@ -347,11 +347,9 @@ class Overlay(Bitstream):
         self.parser = self.device.get_bitfile_metadata(self.bitfile_name)
 
         hwh_file = self.bitfile_name.replace(".bit", ".hwh")
-        self._metadata = HwhFrontend(hwh_file).metadata
-        self._metadata = bind_drivers_to_metadata(
-            self._metadata, device=device, ip_drivers=_ip_drivers, default_ip=DefaultIP
+        self.metadata = RuntimeMetadata(
+            HwhFrontend(hwh_file).metadata, device=self.device, ip_drivers=_ip_drivers, default_ip=DefaultIP
         )
-        self.md_ip_dict = IpDictView(self._metadata)
 
         self.ip_dict = (
             self.gpio_dict

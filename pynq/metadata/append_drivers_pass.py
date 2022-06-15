@@ -16,7 +16,6 @@ def bind_driver(
 ) -> None:
     """Assigns a driver to this port"""
     core = port.parent()
-    print(f"Attempting to bind a driver to {port.ref}")
     if isinstance(core, Core):
         if core.vlnv.str in ip_drivers:
             port._ext["driver"] = ip_drivers[core.vlnv.str]
@@ -45,13 +44,36 @@ def bind_driver(
             f"Trying to bind driver to {port.ref} but it has no parent"
         )
 
-
 def bind_ps_driver(
-    core: ProcSysCore, device: object, ip_drivers: Dict[str, object], default_ip: object
+    core:ProcSysCore,
+    device: object,
+    ip_drivers: Dict[str,object],
+    default_ip: object,
+    ignore_version: bool = False
 ) -> None:
-    """Assigns a driver to the processing system"""
-    core._ext["driver"] = None
-    core._ext["device"] = device
+    """Assigns a driver to the PS"""
+    if core.vlnv.str in ip_drivers:
+        core._ext["driver"] = ip_drivers[core.vlnv.str]
+        core._ext["device"] = device
+    else:
+        no_version_ip = core.vlnv.str.rpartition(":")[0]
+        if no_version_ip in ip_drivers:
+            if ignore_version:
+                core._ext["driver"] = ip_drivers[no_version_ip]
+                core._ext["device"] = device
+            else:
+                other_versions = [
+                    v
+                    for v in ip_drivers.keys()
+                    if v.startswith(f"{no_version_ip}:")
+                ]
+                message = f"IP {core.ref} is of type {core.vlnv.str} a driver has been found for {other_versions}. Use ignore_version=True to use this driver."
+                warnings.warn(message, UserWarning)
+                core._ext["driver"] = default_ip
+                core._ext["device"] = device
+        else:
+            core._ext["driver"] = default_ip
+            core._ext["device"] = device
 
 
 def bind_drivers_to_metadata(
@@ -69,10 +91,13 @@ def bind_drivers_to_metadata(
                         ip_drivers=ip_drivers,
                         default_ip=default_ip,
                     )
-
         if isinstance(core, ProcSysCore):
             bind_ps_driver(
-                core=core, device=device, ip_drivers=ip_drivers, default_ip=default_ip
+                core=core,
+                device=device,
+                ip_drivers=ip_drivers,
+                default_ip=default_ip,
             )
+            
 
     return md
