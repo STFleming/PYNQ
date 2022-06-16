@@ -1,5 +1,6 @@
 from pynqmetadata import Module
 from .ip_dict_view import IpDictView
+from .gpio_dict_view import GpioDictView
 from .append_drivers_pass import bind_drivers_to_metadata
 from typing import Dict
 
@@ -16,6 +17,7 @@ class RuntimeMetadata:
         self.md = bind_drivers_to_metadata(md, device=device, ip_drivers=ip_drivers, default_ip=default_ip)
         self.md.refresh()
         self.ip_dict = IpDictView(self.md)
+        self.gpio_dict = GpioDictView(self.md)
 
     def __getattr__(self, key):
         """ Overload of __getattr__ to return a driver for an IP
