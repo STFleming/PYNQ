@@ -5,6 +5,7 @@ from pynqmetadata import Module, ProcSysCore, SubordinatePort
 from pynqmetadata.errors import FeatureNotYetImplemented
 
 from ..utils import ReprDict
+from .append_drivers_pass import DriverExtension
 
 def _default_repr(obj):
     return repr(obj)
@@ -37,10 +38,9 @@ class IpDictView:
 
                         repr_dict[core.name]["driver"] = None
                         repr_dict[core.name]["device"] = None
-                        if "driver" in port._ext:
-                            repr_dict[core.name]["driver"] =  port._ext["driver"]
-                        if "device" in port._ext:
-                            repr_dict[core.name]["device"] = port._ext["device"]
+                        if "driver" in port.ext and isinstance(port.ext["driver"], DriverExtension):
+                            repr_dict[core.name]["driver"] =  port.ext["driver"].driver
+                            repr_dict[core.name]["device"] = port.ext["driver"].device
 
                         if not isinstance(port.parent(), ProcSysCore):
                             for reg in port.registers.values():
@@ -84,10 +84,9 @@ class IpDictView:
                 repr_dict[core.name]["parameters"] = {}
                 repr_dict[core.name]["driver"] = None
                 repr_dict[core.name]["device"] = None
-                if "driver" in core._ext:
-                    repr_dict[core.name]["driver"] =  core._ext["driver"]
-                if "device" in core._ext:
-                    repr_dict[core.name]["device"] = core._ext["device"]
+                if "driver" in core.ext and isinstance(core.ext["driver"], DriverExtension):
+                    repr_dict[core.name]["driver"] = core.ext["driver"].driver 
+                    repr_dict[core.name]["device"] = core.ext["driver"].device
 
                 for param in core.parameters.values():
                     repr_dict[core.name]["parameters"][param.name] = param.value

@@ -4,7 +4,15 @@ from typing import Dict
 from pynqmetadata import Core, MetadataExtension, Module, ProcSysCore, SubordinatePort
 from pynqmetadata.errors import UnexpectedMetadataObjectType
 
+from pydantic import Field
+
 DRIVERS_GROUP = "pynq.lib"
+
+class DriverExtension(MetadataExtension):
+    """Extends the metadata for an IP with driver
+    information"""
+    driver:object = Field(..., exclude=True, description="The runtime driver for this core") 
+    device:object = Field(..., exclude=True, description="The device that this core has been loaded onto")
 
 
 def bind_driver(
@@ -18,14 +26,12 @@ def bind_driver(
     core = port.parent()
     if isinstance(core, Core):
         if core.vlnv.str in ip_drivers:
-            port._ext["driver"] = ip_drivers[core.vlnv.str]
-            port._ext["device"] = device
+            port.ext["driver"] = DriverExtension(driver=ip_drivers[core.vlnv.str], device=device)
         else:
             no_version_ip = core.vlnv.str.rpartition(":")[0]
             if no_version_ip in ip_drivers:
                 if ignore_version:
-                    port._ext["driver"] = ip_drivers[no_version_ip]
-                    port._ext["device"] = device
+                    port.ext["driver"] = DriverExtension(driver=ip_drivers[no_version_ip], device=device)
                 else:
                     other_versions = [
                         v
@@ -34,11 +40,9 @@ def bind_driver(
                     ]
                     message = f"IP {core.ref} is of type {core.vlnv.str} a driver has been found for {other_versions}. Use ignore_version=True to use this driver."
                     warnings.warn(message, UserWarning)
-                    port._ext["driver"] = default_ip
-                    port._ext["device"] = device
+                    port.ext["driver"] = DriverExtension(driver=default_ip, device=device)
             else:
-                port._ext["driver"] = default_ip
-                port._ext["device"] = device
+                port.ext["driver"] = DriverExtension(driver=default_ip, device=device)
     else:
         raise UnexpectedMetadataObjectType(
             f"Trying to bind driver to {port.ref} but it has no parent"
@@ -53,14 +57,12 @@ def bind_ps_driver(
 ) -> None:
     """Assigns a driver to the PS"""
     if core.vlnv.str in ip_drivers:
-        core._ext["driver"] = ip_drivers[core.vlnv.str]
-        core._ext["device"] = device
+        core.ext["driver"] = DriverExtension(driver=ip_drivers[core.vlnv.str], device=device)
     else:
         no_version_ip = core.vlnv.str.rpartition(":")[0]
         if no_version_ip in ip_drivers:
             if ignore_version:
-                core._ext["driver"] = ip_drivers[no_version_ip]
-                core._ext["device"] = device
+                core.ext["driver"] = DriverExtension(driver=ip_drivers[core.vlnv.str], device=device)
             else:
                 other_versions = [
                     v
@@ -69,11 +71,9 @@ def bind_ps_driver(
                 ]
                 message = f"IP {core.ref} is of type {core.vlnv.str} a driver has been found for {other_versions}. Use ignore_version=True to use this driver."
                 warnings.warn(message, UserWarning)
-                core._ext["driver"] = default_ip
-                core._ext["device"] = device
+                core.ext["driver"] = DriverExtension(driver=default_ip, device=device)
         else:
-            core._ext["driver"] = default_ip
-            core._ext["device"] = device
+            core.ext["driver"] = DriverExtension(driver=default_ip, device=device)
 
 
 def bind_drivers_to_metadata(
