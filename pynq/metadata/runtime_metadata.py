@@ -2,6 +2,7 @@ from pynqmetadata import Module
 from .ip_dict_view import IpDictView
 from .gpio_dict_view import GpioDictView
 from .clock_dict_view import ClockDictView
+from .mem_dict_view import MemDictView
 from .append_drivers_pass import bind_drivers_to_metadata
 from typing import Dict
 
@@ -32,6 +33,7 @@ class RuntimeMetadata:
         self.ip_dict = IpDictView(self.md)
         self.gpio_dict = GpioDictView(self.md)
         self.clock_dict = ClockDictView(self.md)
+        self.mem_dict = MemDictView(self.md)
 
     def __getattr__(self, key):
         """ Overload of __getattr__ to return a driver for an IP
