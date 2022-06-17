@@ -13,8 +13,6 @@ def _default_repr(obj):
 class GpioDictView:
     """
     Provides a view onto the metadata that mirrors the structure of gpio_dict.
-
-    TODO: Make this also track state?
     """
 
     def __init__(self, module: Module) -> None:
