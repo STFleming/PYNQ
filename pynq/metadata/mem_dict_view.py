@@ -33,17 +33,6 @@ class MemDictView:
     def mem_dict(self) -> Dict:
         repr_dict = {}
 
-        # add the PS DDR
-        #for core in self._md.cores.values():
-        #    for port in core.ports.values():
-        #        if isinstance(port, ManagerPort):
-        #            for addr in port.addrmap.values():
-        #                if addr["memtype"] == "memory":
-        #                    subord_port = port._addrmap_obj[addr["subord_port"]]
-        #                    if isinstance(subord_port.parent(), ProcSysCore):
-        #                        if "PSDDR" not in repr_dict:
-        #                            repr_dict["PSDDR"] = {}
-
         ps_core = None
         for core in self._md.cores.values():
             if isinstance(core, ProcSysCore):
