@@ -377,6 +377,7 @@ class Overlay(Bitstream):
             self._ip_map._description, bitfile_name, "overlay"
         )
 
+
     def __getattr__(self, key):
         """Overload of __getattr__ to return a driver for an IP or
         hierarchy. Throws an `RuntimeError` if the overlay is not loaded.

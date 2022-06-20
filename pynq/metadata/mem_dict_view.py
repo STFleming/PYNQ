@@ -3,12 +3,21 @@ from pynqmetadata import Module, ProcSysCore, ManagerPort, Core
 from pynqmetadata.errors import FeatureNotYetImplemented
 from pynqmetadata.errors import MetadataObjectNotFound
 
+from ..pl_server.embedded_device import _create_xclbin, _unify_dictionaries
+from ..pl_server.xclbin_parser import XclBin
+
+from .xrt_metadata_extension import XrtExtension
+
 from typing import Dict
 
 from ..utils import ReprDict
 
 def _default_repr(obj):
     return repr(obj)
+
+class DummyHwhParser:
+    def __init__(self, mem_dict):
+        self.mem_dict = mem_dict
 
 class MemDictView:
     """
@@ -17,21 +26,23 @@ class MemDictView:
 
     def __init__(self, module: Module) -> None:
         self._md = module
+        self._first_run = True
+        self._created_xclbin = {}
 
     @property
     def mem_dict(self) -> Dict:
         repr_dict = {}
 
         # add the PS DDR
-        for core in self._md.cores.values():
-            for port in core.ports.values():
-                if isinstance(port, ManagerPort):
-                    for addr in port.addrmap.values():
-                        if addr["memtype"] == "memory":
-                            subord_port = port._addrmap_obj[addr["subord_port"]]
-                            if isinstance(subord_port.parent(), ProcSysCore):
-                                if "PSDDR" not in repr_dict:
-                                    repr_dict["PSDDR"] = {}
+        #for core in self._md.cores.values():
+        #    for port in core.ports.values():
+        #        if isinstance(port, ManagerPort):
+        #            for addr in port.addrmap.values():
+        #                if addr["memtype"] == "memory":
+        #                    subord_port = port._addrmap_obj[addr["subord_port"]]
+        #                    if isinstance(subord_port.parent(), ProcSysCore):
+        #                        if "PSDDR" not in repr_dict:
+        #                            repr_dict["PSDDR"] = {}
 
         ps_core = None
         for core in self._md.cores.values():
@@ -45,11 +56,45 @@ class MemDictView:
             if isinstance(port, ManagerPort):
                 for addr in port.addrmap.values():
                     if addr["memtype"] == "memory":
-                        subord_port = port._addrmap_obj[addr["subord_port"]]
+                        subord_port = port.addrmap_obj[addr["subord_port"]]
                         dst_core = subord_port.parent()
                         if isinstance(dst_core, Core):
                             repr_dict[dst_core.name] = {}
-        
+                            repr_dict[dst_core.name]["type"] = "DDR4"
+                            repr_dict[dst_core.name]["bdtype"] = None
+                            repr_dict[dst_core.name]["state"] = None
+                            repr_dict[dst_core.name]["addr_range"] = subord_port.range 
+                            repr_dict[dst_core.name]["phys_addr"] = subord_port.baseaddr 
+                            repr_dict[dst_core.name]["mem_id"] = subord_port.name 
+                            repr_dict[dst_core.name]["memtype"] = "MEMORY" 
+                            repr_dict[dst_core.name]["used"] = 1 
+
+        if self._first_run:
+            xclbin_data = _create_xclbin(repr_dict) # Create all the XRT stuff 
+            xclbin_parser = XclBin(xclbin_data=xclbin_data)
+            hwh_parser = DummyHwhParser(mem_dict=repr_dict)
+            _unify_dictionaries(hwh_parser=hwh_parser, xclbin_parser=xclbin_parser)
+            for name,mem in repr_dict.items():
+                if name != "PSDDR":
+                    self._created_xclbin[name] = {} # cache it for later
+                    self._created_xclbin[name]["xrt_mem_idx"] = repr_dict[name]["xrt_mem_idx"] 
+                    self._created_xclbin[name]["raw_type"] = repr_dict[name]["raw_type"] 
+                    self._created_xclbin[name]["base_address"] = repr_dict[name]["base_address"] 
+                    self._created_xclbin[name]["size"] = repr_dict[name]["size"] 
+                    self._created_xclbin[name]["streaming"] = repr_dict[name]["streaming"] 
+                    self._created_xclbin[name]["idx"] = repr_dict[name]["idx"] 
+                    self._created_xclbin[name]["tag"] = repr_dict[name]["tag"] 
+            self._first_run = False
+        else:
+            for name,mem in repr_dict.items(): # read it from the cache when regenerating
+                if name != "PSDDR":
+                    mem["xrt_mem_idx"] = self._created_xclbin["xrt_mem_idx"]
+                    mem["raw_type"] = self._created_xclbin["raw_type"]
+                    mem["base_address"] = self._created_xclbin["base_address"]
+                    mem["size"] = self._created_xclbin["size"]
+                    mem["streaming"] = self._created_xclbin["streaming"]
+                    mem["idx"] = self._created_xclbin["idx"]
+                    mem["tag"] = self._created_xclbin["tag"]
 
         return repr_dict
 
