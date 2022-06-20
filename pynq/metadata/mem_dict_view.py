@@ -56,6 +56,15 @@ class MemDictView:
                             repr_dict[dst_core.name]["phys_addr"] = subord_port.baseaddr 
                             repr_dict[dst_core.name]["mem_id"] = subord_port.name 
                             repr_dict[dst_core.name]["memtype"] = "MEMORY" 
+                            repr_dict[dst_core.name]["gpio"] = {}
+                            repr_dict[dst_core.name]["interrupts"] = {}
+                            repr_dict[dst_core.name]["parameters"] = {}
+                            for param in dst_core.parameters.values():
+                                repr_dict[dst_core.name]["parameters"][param.name] = param.value
+                            repr_dict[dst_core.name]["registers"] = {}
+                            for reg in subord_port.registers.values():
+                                repr_dict[dst_core.name]["registers"][reg.name] = reg.dict()
+
                             repr_dict[dst_core.name]["used"] = 1 
 
         if self._first_run:
