@@ -31,8 +31,10 @@ import os
 import argparse
 import json
 from shutil import move
-from pynq.utils import (deliver_notebooks, _detect_devices, get_logger,
-                        _ExtensionsManager)
+from pynq.utils import (deliver_notebooks, _detect_devices)
+
+from pynqutils.runtime import get_logger, ExtensionsManager
+
 
 
 __author__ = "Giuseppe Natale"
@@ -50,7 +52,7 @@ class _GetNotebooksParser(argparse.ArgumentParser):
     def epilog(self):
         """Add list of entry points to epilog when help output is requested."""
         return "Available notebooks modules: {}".format(
-            ", ".join(_ExtensionsManager(NOTEBOOKS_GROUP).printable))
+            ", ".join(ExtensionsManager(NOTEBOOKS_GROUP).printable))
 
     @epilog.setter
     def epilog(self, x):
@@ -114,7 +116,7 @@ def _update_installed(path, ext):
 def main():
     parser = _get_notebooks_parser()
     args = parser.parse_args()
-    notebooks_ext_man = _ExtensionsManager(NOTEBOOKS_GROUP)
+    notebooks_ext_man = ExtensionsManager(NOTEBOOKS_GROUP)
     if args.list:
         notebooks_list = notebooks_ext_man.printable
         if notebooks_list:

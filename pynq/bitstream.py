@@ -34,7 +34,9 @@ __email__ = "pynq_support@xilinx.com"
 import os
 import warnings
 from .devicetree import get_dtbo_path
-from .utils import _find_local_overlay_res, _ExtensionsManager
+#from .utils import _find_local_overlay_res, _ExtensionsManager
+from .utils import _find_local_overlay_res
+from pynqutils.runtime import ExtensionsManager
 
 OVERLAYS_GROUP = "pynq.overlays"
 
@@ -117,7 +119,7 @@ class Bitstream:
         else:
             bitfile_abs = _resolve_bitstream(os.path.abspath(bitfile_name),
                                              device)
-            overlays_ext_man = _ExtensionsManager(OVERLAYS_GROUP)
+            overlays_ext_man = ExtensionsManager(OVERLAYS_GROUP)
             paths = [overlays_ext_man.extension_path(OVERLAYS_GROUP)]
             paths += overlays_ext_man.paths
             for path in paths:

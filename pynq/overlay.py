@@ -36,6 +36,8 @@ import warnings
 from copy import deepcopy
 
 from pynqmetadata.frontends import HwhFrontend
+#from .utils import ReprDict, _ExtensionsManager
+from pynqutils.runtime import ReprDict, ExtensionsManager
 
 from pynq._3rdparty import ert
 
@@ -47,7 +49,6 @@ from .metadata.runtime_metadata import RuntimeMetadata
 from .mmio import MMIO
 from .ps import Clocks
 from .registers import RegisterMap
-from .utils import ReprDict, _ExtensionsManager
 
 __author__ = "Yun Rock Qu"
 __copyright__ = "Copyright 2016, Xilinx"
@@ -545,7 +546,7 @@ class Overlay(Bitstream):
         """
         import importlib
 
-        drivers_ext_man = _ExtensionsManager(DRIVERS_GROUP)
+        drivers_ext_man = ExtensionsManager(DRIVERS_GROUP)
         for ext in drivers_ext_man.list:
             importlib.import_module(ext.module_name)
 
