@@ -86,13 +86,13 @@ class MemDictView:
         else:
             for name,mem in repr_dict.items(): # read it from the cache when regenerating
                 if name != "PSDDR":
-                    mem["xrt_mem_idx"] = self._created_xclbin["xrt_mem_idx"]
-                    mem["raw_type"] = self._created_xclbin["raw_type"]
-                    mem["base_address"] = self._created_xclbin["base_address"]
-                    mem["size"] = self._created_xclbin["size"]
-                    mem["streaming"] = self._created_xclbin["streaming"]
-                    mem["idx"] = self._created_xclbin["idx"]
-                    mem["tag"] = self._created_xclbin["tag"]
+                    mem["xrt_mem_idx"] = self._created_xclbin[name]["xrt_mem_idx"]
+                    mem["raw_type"] = self._created_xclbin[name]["raw_type"]
+                    mem["base_address"] = self._created_xclbin[name]["base_address"]
+                    mem["size"] = self._created_xclbin[name]["size"]
+                    mem["streaming"] = self._created_xclbin[name]["streaming"]
+                    mem["idx"] = self._created_xclbin[name]["idx"]
+                    mem["tag"] = self._created_xclbin[name]["tag"]
 
         return repr_dict
 
