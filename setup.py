@@ -47,6 +47,8 @@ from datetime import datetime
 
 # Requirement
 required = [
+    'pynqutils>=0.3.0',
+    'pynqmetadata>=0.3.0',
     'setuptools>=24.2.0',
     'cffi',
     'numpy'
@@ -216,9 +218,9 @@ def copy_board_notebooks(staging_notebooks_dir, board):
 
 # Copy notebooks in boards/BOARD/OVERLAY/notebooks
 def copy_overlay_notebooks(staging_notebooks_dir, board):
-    from pynq.utils import download_overlays
+    from pynq.utils import download_overlay_to
     board_folder = 'boards/{}'.format(board)
-    download_overlays(board_folder, fail_at_lookup=True, cleanup=True)
+    download_overlays_to(board_folder, fail_at_lookup=True, cleanup=True)
     overlay_dirs = find_overlays(board_folder)
     for overlay in overlay_dirs:
         src_folder = os.path.join(board_folder, overlay, 'notebooks')
@@ -431,7 +433,7 @@ setup(name='pynq',
       author='Xilinx PYNQ Development Team',
       author_email='pynq_support@xilinx.com',
       url='https://github.com/Xilinx/PYNQ',
-      packages=find_packages(),
+      packages=find_packages().append(['pynqutils','pynqmetadata']),
       cmdclass={
           'build_ext': BuildExtension,
           },
@@ -452,7 +454,7 @@ setup(name='pynq',
               "pynq-get-notebooks = pynq._cli.get_notebooks:main"
           ],
           'distutils.commands': [
-              'download_overlays = pynq.utils:_download_overlays'
+              'download_overlays = pynq.utils:_overlay_download'
           ]
       },
       ext_modules=ext_modules,
