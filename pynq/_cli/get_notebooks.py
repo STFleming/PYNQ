@@ -31,10 +31,10 @@ import os
 import argparse
 import json
 from shutil import move
-from pynq.utils import (deliver_notebooks, _detect_devices)
+from pynq.utils import _detect_devices
 
 from pynqutils.runtime import get_logger, ExtensionsManager
-
+from pynqutils.runtime import deliver_notebooks 
 
 
 __author__ = "Giuseppe Natale"

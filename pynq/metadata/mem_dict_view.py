@@ -10,7 +10,7 @@ from .xrt_metadata_extension import XrtExtension
 
 from typing import Dict
 
-from ..utils import ReprDict
+from pynqutils.runtime import ReprDict
 
 def _default_repr(obj):
     return repr(obj)

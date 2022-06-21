@@ -35,8 +35,7 @@ import os
 import warnings
 from .devicetree import get_dtbo_path
 #from .utils import _find_local_overlay_res, _ExtensionsManager
-from .utils import _find_local_overlay_res
-from pynqutils.runtime import ExtensionsManager
+from pynqutils.runtime import ExtensionsManager, _find_local_overlay_res
 
 OVERLAYS_GROUP = "pynq.overlays"
 
