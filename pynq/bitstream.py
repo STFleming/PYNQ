@@ -35,7 +35,8 @@ import os
 import warnings
 from .devicetree import get_dtbo_path
 #from .utils import _find_local_overlay_res, _ExtensionsManager
-from pynqutils.runtime import ExtensionsManager, _find_local_overlay_res
+#from pynqutils.runtime import ExtensionsManager, _find_local_overlay_res
+import pynqutils
 
 OVERLAYS_GROUP = "pynq.overlays"
 
@@ -45,7 +46,7 @@ def _resolve_bitstream(bitfile_path, device):
         return bitfile_path
     if os.path.isdir(bitfile_path + ".d") and hasattr(device, 'name'):
         split_bitfile = os.path.split(bitfile_path)
-        local_bitfile = _find_local_overlay_res(device.name, split_bitfile[1],
+        local_bitfile = pynqutils.runtime._find_local_overlay_res(device.name, split_bitfile[1],
                                                 split_bitfile[0])
         if local_bitfile is not None:
             return local_bitfile
@@ -118,7 +119,7 @@ class Bitstream:
         else:
             bitfile_abs = _resolve_bitstream(os.path.abspath(bitfile_name),
                                              device)
-            overlays_ext_man = ExtensionsManager(OVERLAYS_GROUP)
+            overlays_ext_man = pynqutils.runtime.ExtensionsManager(OVERLAYS_GROUP)
             paths = [overlays_ext_man.extension_path(OVERLAYS_GROUP)]
             paths += overlays_ext_man.paths
             for path in paths:

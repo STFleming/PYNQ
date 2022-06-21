@@ -4,7 +4,7 @@ from pynqmetadata.errors import FeatureNotYetImplemented
 
 from typing import Dict
 
-from pynqutils.runtime import ReprDict
+import pynqutils
 
 def _default_repr(obj):
     return repr(obj)

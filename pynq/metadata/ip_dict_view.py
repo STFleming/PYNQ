@@ -4,7 +4,6 @@ import json
 from pynqmetadata import Module, ProcSysCore, SubordinatePort
 from pynqmetadata.errors import FeatureNotYetImplemented
 
-from pynqutils.runtime import ReprDict
 from .append_drivers_pass import DriverExtension
 
 def _default_repr(obj):

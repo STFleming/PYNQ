@@ -33,11 +33,10 @@ import itertools
 import re
 import struct
 import warnings
+import pynqutils
 from copy import deepcopy
 
 from pynqmetadata.frontends import HwhFrontend
-#from .utils import ReprDict, _ExtensionsManager
-from pynqutils.runtime import ReprDict, ExtensionsManager
 
 from pynq._3rdparty import ert
 
@@ -390,18 +389,18 @@ class Overlay(Bitstream):
             raise RuntimeError("Overlay not currently loaded")
 
     def _deepcopy_dict_from(self, source):
-        self.ip_dict = ReprDict(deepcopy(source.ip_dict), rootname="ip_dict")
-        self.gpio_dict = ReprDict(deepcopy(source.gpio_dict), rootname="gpio_dict")
-        self.interrupt_controllers = ReprDict(
+        self.ip_dict = pynqutils.runtime.ReprDict(deepcopy(source.ip_dict), rootname="ip_dict")
+        self.gpio_dict = pynqutils.runtime.ReprDict(deepcopy(source.gpio_dict), rootname="gpio_dict")
+        self.interrupt_controllers = pynqutils.runtime.ReprDict(
             deepcopy(source.interrupt_controllers), rootname="interrupt_controllers"
         )
-        self.interrupt_pins = ReprDict(
+        self.interrupt_pins = pynqutils.runtime.ReprDict(
             deepcopy(source.interrupt_pins), rootname="interrupt_pins"
         )
-        self.hierarchy_dict = ReprDict(
+        self.hierarchy_dict = pynqutils.runtime.ReprDict(
             deepcopy(source.hierarchy_dict), rootname="hierarchy_dict"
         )
-        self.mem_dict = ReprDict(deepcopy(source.mem_dict), rootname="mem_dict")
+        self.mem_dict = pynqutils.runtime.ReprDict(deepcopy(source.mem_dict), rootname="mem_dict")
 
     def free(self):
         if hasattr(self.device, "free_bitstream"):
@@ -546,7 +545,7 @@ class Overlay(Bitstream):
         """
         import importlib
 
-        drivers_ext_man = ExtensionsManager(DRIVERS_GROUP)
+        drivers_ext_man = pynqutils.runtime.ExtensionsManager(DRIVERS_GROUP)
         for ext in drivers_ext_man.list:
             importlib.import_module(ext.module_name)
 

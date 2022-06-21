@@ -36,16 +36,6 @@ from distutils.file_util import copy_file
 from distutils.command.build import build as dist_build
 from setuptools.command.build_py import build_py as _build_py
 
-from pynqutils.runtime import _download_overlay, download_overlay
-
-def _overlay_download():
-    """Wrapper for the _download_overlay call in pynqutils"""
-    _download_overlay()
-
-def download_overlay_to(board_folder:str, fail_at_lookup:bool, cleanup:bool):
-    """Wrapper for the download_overlay call in pynqutils"""
-    download_overlay(board_folder=board_folder, fail_at_lookup=fail_at_lookup, cleanup=cleanup)
-
 _function_text = """
 import json
 
