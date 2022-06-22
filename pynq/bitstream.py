@@ -34,8 +34,6 @@ __email__ = "pynq_support@xilinx.com"
 import os
 import warnings
 from .devicetree import get_dtbo_path
-#from .utils import _find_local_overlay_res, _ExtensionsManager
-#from pynqutils.runtime import ExtensionsManager, _find_local_overlay_res
 import pynqutils
 
 OVERLAYS_GROUP = "pynq.overlays"
