@@ -218,7 +218,7 @@ def copy_board_notebooks(staging_notebooks_dir, board):
 
 # Copy notebooks in boards/BOARD/OVERLAY/notebooks
 def copy_overlay_notebooks(staging_notebooks_dir, board):
-    from pynqutils.runtime import download_overlays 
+    from pynqutils.setup_utils import download_overlays 
     board_folder = 'boards/{}'.format(board)
     download_overlays(board_folder, fail_at_lookup=True, cleanup=True)
     overlay_dirs = find_overlays(board_folder)
@@ -455,7 +455,7 @@ setup(name='pynq',
               "pynq-get-notebooks = pynq._cli.get_notebooks:main"
           ],
           'distutils.commands': [
-              'download_overlays = pynqutils.runtime:du_download_overlays'
+              'download_overlays = pynqutils.setup_utils:du_download_overlays'
           ]
       },
       ext_modules=ext_modules,

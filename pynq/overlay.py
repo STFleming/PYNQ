@@ -545,7 +545,7 @@ class Overlay(Bitstream):
         """
         import importlib
 
-        drivers_ext_man = pynqutils.runtime.ExtensionsManager(DRIVERS_GROUP)
+        drivers_ext_man = pynqutils.setup_utils.ExtensionsManager(DRIVERS_GROUP)
         for ext in drivers_ext_man.list:
             importlib.import_module(ext.module_name)
 
