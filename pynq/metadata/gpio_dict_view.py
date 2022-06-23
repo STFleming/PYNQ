@@ -31,14 +31,11 @@ class GpioDictView:
                         repr_dict[n]["state"] = self._state[n] 
                     else:
                         repr_dict[n]["state"] = None 
-                    pins='{'
+                    pins= set()
                     for p in i["pins"]:
-                        ref:str = p.ref
-                        pins += f'"{ref}"'
-                        if p != i["pins"][-1]:
-                            pins+=","
-                    pins+='}'
-                    repr_dict[n]["pins"] = pins
+                        ref:str = f"{p.parent().parent().hierarchy_name}/{p.name}"
+                        pins.add(ref)
+                    repr_dict[n]["pins"] = pins 
                     repr_dict[n]["index"] = int(i["index"])
 
         return repr_dict
