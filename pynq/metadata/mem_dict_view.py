@@ -46,24 +46,25 @@ class MemDictView:
                         subord_port = port.addrmap_obj[addr["subord_port"]]
                         dst_core = subord_port.parent()
                         if isinstance(dst_core, Core):
-                            repr_dict[dst_core.name] = {}
-                            repr_dict[dst_core.name]["type"] = "DDR4"
-                            repr_dict[dst_core.name]["bdtype"] = None
-                            repr_dict[dst_core.name]["state"] = None
-                            repr_dict[dst_core.name]["addr_range"] = subord_port.range 
-                            repr_dict[dst_core.name]["phys_addr"] = subord_port.baseaddr 
-                            repr_dict[dst_core.name]["mem_id"] = subord_port.name 
-                            repr_dict[dst_core.name]["memtype"] = "MEMORY" 
-                            repr_dict[dst_core.name]["gpio"] = {}
-                            repr_dict[dst_core.name]["interrupts"] = {}
-                            repr_dict[dst_core.name]["parameters"] = {}
+                            repr_dict[dst_core.hierarchy_name] = {}
+                            repr_dict[dst_core.hierarchy_name]["fullpath"] = dst_core.hierarchy_name
+                            repr_dict[dst_core.hierarchy_name]["type"] = "DDR4"
+                            repr_dict[dst_core.hierarchy_name]["bdtype"] = None
+                            repr_dict[dst_core.hierarchy_name]["state"] = None
+                            repr_dict[dst_core.hierarchy_name]["addr_range"] = subord_port.range 
+                            repr_dict[dst_core.hierarchy_name]["phys_addr"] = subord_port.baseaddr 
+                            repr_dict[dst_core.hierarchy_name]["mem_id"] = subord_port.name 
+                            repr_dict[dst_core.hierarchy_name]["memtype"] = "MEMORY" 
+                            repr_dict[dst_core.hierarchy_name]["gpio"] = {}
+                            repr_dict[dst_core.hierarchy_name]["interrupts"] = {}
+                            repr_dict[dst_core.hierarchy_name]["parameters"] = {}
                             for param in dst_core.parameters.values():
-                                repr_dict[dst_core.name]["parameters"][param.name] = param.value
-                            repr_dict[dst_core.name]["registers"] = {}
+                                repr_dict[dst_core.hierarchy_name]["parameters"][param.name] = param.value
+                            repr_dict[dst_core.hierarchy_name]["registers"] = {}
                             for reg in subord_port.registers.values():
-                                repr_dict[dst_core.name]["registers"][reg.name] = reg.dict()
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name] = reg.dict()
 
-                            repr_dict[dst_core.name]["used"] = 1 
+                            repr_dict[dst_core.hierarchy_name]["used"] = 1 
 
         if self._first_run:
             xclbin_data = _create_xclbin(repr_dict) # Create all the XRT stuff 
