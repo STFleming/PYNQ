@@ -62,7 +62,22 @@ class MemDictView:
                                 repr_dict[dst_core.hierarchy_name]["parameters"][param.name] = param.value
                             repr_dict[dst_core.hierarchy_name]["registers"] = {}
                             for reg in subord_port.registers.values():
-                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name] = reg.dict()
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name] = {}
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["address_offset"] = reg.offset
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["size"] = reg.width
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["access"] = reg.access
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["description"] = reg.description
+                                repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["fields"] = {} 
+                                for field in reg.bitfields.values():
+                                    repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["fields"][field.name] = {} 
+                                    repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["fields"][field.name]["bit_offset"] = field.LSB 
+                                    repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["fields"][field.name]["bit_width"] = (field.MSB - field.LSB) + 1 
+                                    repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["fields"][field.name]["description"] = field.description 
+                                    repr_dict[dst_core.hierarchy_name]["registers"][reg.name]["fields"][field.name]["access"] = field.access 
+                                    
+
+
+
 
                             repr_dict[dst_core.hierarchy_name]["used"] = 1 
 
