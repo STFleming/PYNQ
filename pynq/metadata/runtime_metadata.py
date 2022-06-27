@@ -3,6 +3,7 @@ from .ip_dict_view import IpDictView
 from .gpio_dict_view import GpioDictView
 from .clock_dict_view import ClockDictView
 from .mem_dict_view import MemDictView
+from .hierarchy_dict_view import HierarchyDictView
 from .append_drivers_pass import bind_drivers_to_metadata
 from typing import Dict
 
@@ -34,6 +35,7 @@ class RuntimeMetadata:
         self.gpio_dict = GpioDictView(self.md)
         self.clock_dict = ClockDictView(self.md)
         self.mem_dict = MemDictView(self.md)
+        self.hierarchy_dict = HierarchyDictView(self.md)
 
     def __getattr__(self, key):
         """ Overload of __getattr__ to return a driver for an IP
