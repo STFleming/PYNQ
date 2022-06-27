@@ -39,6 +39,7 @@ class IpDictView:
                         repr_dict[dcore.hierarchy_name] = {}
                         repr_dict[dcore.hierarchy_name]["type"] = dcore.vlnv.str
                         repr_dict[dcore.hierarchy_name]["mem_id"] = dst_port.name
+                        repr_dict[dcore.hierarchy_name]["memtype"] = "REGISTER" 
                         repr_dict[dcore.hierarchy_name]["gpio"] = {}
                         repr_dict[dcore.hierarchy_name]["interrupts"] = {}
                         repr_dict[dcore.hierarchy_name]["parameters"] = {}
@@ -59,8 +60,11 @@ class IpDictView:
                                     "address_offset"
                                 ] = reg.offset
                                 repr_dict[dcore.hierarchy_name]["registers"][reg.name][
-                                    "width"
+                                    "size"
                                 ] = reg.width
+                                repr_dict[dcore.hierarchy_name]["registers"][reg.name][
+                                    "access"
+                                ] = reg.access
                                 repr_dict[dcore.hierarchy_name]["registers"][reg.name][
                                     "description"
                                 ] = reg.description
@@ -77,6 +81,9 @@ class IpDictView:
                                     repr_dict[dcore.hierarchy_name]["registers"][reg.name][
                                         "fields"
                                     ][f.name]["bit_width"] = (f.MSB - f.LSB) + 1
+                                    repr_dict[dcore.hierarchy_name]["registers"][reg.name][
+                                        "fields"
+                                    ][f.name]["access"] = f.access
                                     repr_dict[dcore.hierarchy_name]["registers"][reg.name][
                                         "fields"
                                     ][f.name]["description"] = f.description
