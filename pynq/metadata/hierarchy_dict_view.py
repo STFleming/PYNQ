@@ -128,20 +128,26 @@ class HierarchyDictView:
         """
         repr_dict = {}
         top_level = self._md.hierarchies
+
+        # Build up the hierarchies
         for hierarchy in top_level.hierarchies_obj.values():
             self._hierarchy_walker(repr_dict, hierarchy)      
 
+        # Prune hierarchies that are not used
         for item in repr_dict.values():
             self._prune_unused_walker(item)
 
+        # Remove anything at the root that has nothing beneath it
         del_list = []
         for i_name, i in repr_dict.items():
             if len(i["ip"])==0 and len(i["memories"])==0 and len(i["hierarchies"])==0:
                 del_list.append(i_name)
 
+        # Remove everything flagged for removal
         for d in del_list:
             del repr_dict[d]
 
+        # the extra sub-hierarchies add them to the root
         add_to_root = {}
         for item in repr_dict.values():
             self._replicate_subhierarchies(add_to_root, item)
@@ -149,9 +155,12 @@ class HierarchyDictView:
         for iname, i in add_to_root.items():
             repr_dict[iname] = i
 
+        # Assign drivers to all the hierarchies (Writes into the central metadata with a metadata extension)
+        # If a driver is already associated with the hierarchy then grab that
         for item in repr_dict.values(): 
             self._assign_drivers(item)
 
+        # remove any references to the metadata hierarchies in the dict
         for item in repr_dict.values():
             self._cleanup_metadata_hierarchy_references(item)
 
