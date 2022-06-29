@@ -32,10 +32,11 @@ class HierarchyDictView:
             r[h.name]["hierarchies"] = {}
 
         for ip in h.core_obj.values():
-            if ip.hierarchy_name in self._ip_dict: 
-                r[h.name]["ip"][ip.name] = ip.ref
             if ip.hierarchy_name in self._mem_dict:
                 r[h.name]["memories"][ip.name] = ip.ref
+            else:
+                if ip.hierarchy_name in self._ip_dict: 
+                    r[h.name]["ip"][ip.name] = ip.ref
 
         for hier in h.hierarchies_obj.values():
             self._hierarchy_walker(r[h.name]["hierarchies"], hier)
@@ -43,21 +44,15 @@ class HierarchyDictView:
     def _prune_walker(self, r:Dict)->bool:
         """ Walks down through the hierarchy dict, removing anything
         that is empty """
-        for item in r.values():
-            empty = False
+        del_list = []
+        for i,h in r["hierarchies"].items():
+            if self._prune_walker(h):
+                del_list.append(i)
 
-            if "hierarchies" in item:
-                del_list = []
-                for i,h in item["hierarchies"].items():
-                    if self._prune_walker(h):
-                        empty = True
-                        del_list.append(i)
+        for i in del_list:
+            del r["hierarchies"][i]
 
-                for i in del_list:
-                    del item["hierarchies"][i]
-
-                return len(item["ip"]) == 0 and len(item["memories"]) == 0
-            return True
+        return len(r["ip"])==0 and len(r["memories"])==0 and len(r["hierarchies"])==0
 
     @property
     def hierarchy_dict(self) -> Dict:
@@ -69,7 +64,17 @@ class HierarchyDictView:
         top_level = self._md.hierarchies
         for hierarchy in top_level.hierarchies_obj.values():
             self._hierarchy_walker(repr_dict, hierarchy)      
-            self._prune_walker(repr_dict)
+
+        for item in repr_dict.values():
+            self._prune_walker(item)
+
+        del_list = []
+        for i_name, i in repr_dict.items():
+            if len(i["ip"])==0 and len(i["memories"])==0 and len(i["hierarchies"])==0:
+                    del_list.append(i_name)
+
+        for d in del_list:
+            del repr_dict[d]
 
         return repr_dict
 
