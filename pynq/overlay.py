@@ -348,7 +348,7 @@ class Overlay(Bitstream):
 
         hwh_file = self.bitfile_name.replace(".bit", ".hwh")
         self.metadata = RuntimeMetadata(
-            HwhFrontend(hwh_file).metadata, ip_drivers=_ip_drivers, default_ip=DefaultIP, device=self.device, hierarchy_drivers=_hierarchy_drivers
+            HwhFrontend(hwh_file).metadata, ip_drivers=_ip_drivers, default_ip=DefaultIP, device=self.device, hierarchy_drivers=_hierarchy_drivers, default_hierarchy=DocumentHierarchy, overlay=self
         )
 
         self.ip_dict = (

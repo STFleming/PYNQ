@@ -16,6 +16,7 @@ class HierarchyDriverExetension(MetadataExtension):
     """Extends the metadata for hierarchies with PYNQ runtime driver information"""
     driver:object = Field(..., exclude=True, description="the runtime driver for this hierarchy")
     device:object = Field(..., exclude=True, description="the device this core has been loaded onto")
+    overlay:object = Field(..., exclude=True, description="the overlay that this driver is associated with")
 
 class HierarchyDictView:
     """
@@ -26,14 +27,18 @@ class HierarchyDictView:
                 module: Module, 
                 ip_view:IpDictView, 
                 mem_view:MemDictView, 
+                overlay: object,
                 hierarchy_drivers:object,
+                default_hierarchy:object,
                 device:object) -> None:
 
         self._md = module
         self._ip_dict = ip_view
         self._mem_dict = mem_view
         self._hierarchy_drivers = hierarchy_drivers
+        self._default_hierarchy = default_hierarchy
         self._device = device
+        self._overlay = overlay
 
     def _hierarchy_walker(self, r:Dict, h:Hierarchy)->None:
         """ recursive walk down the hierarchy h, adding IP
@@ -93,17 +98,19 @@ class HierarchyDictView:
             self._assign_drivers(hier_dict=hier)
 
         if "driver" not in hier_dict["md_ref"].ext:
-            driver = None
+            driver = self._default_hierarchy
             for hip in self._hierarchy_drivers:
                 if hip.checkhierarchy(hier_dict):
                     driver = hip
                     break #taken 
-            hier_dict["md_ref"].ext["driver"] = HierarchyDriverExetension(device=self._device, driver=driver)
+            hier_dict["md_ref"].ext["driver"] = HierarchyDriverExetension(device=self._device, driver=driver, overlay=self._overlay)
             hier_dict["device"] = self._device
             hier_dict["driver"] = driver 
+            hier_dict["overlay"] = self._overlay 
         else:
             hier_dict["device"] = hier_dict["md_ref"].ext["driver"].device 
             hier_dict["driver"] = hier_dict["md_ref"].ext["driver"].driver 
+            hier_dict["overlay"] = hier_dict["md_ref"].ext["driver"].overlay 
 
     def _cleanup_metadata_hierarchy_references(self, hier_dict:Dict)->None:
         """"Removes any reference to the metadata hierarchy objects from
