@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 import json
+import copy
 from pynqmetadata import Module, ProcSysCore, SubordinatePort, Hierarchy
 from pynqmetadata.errors import FeatureNotYetImplemented
 
@@ -30,6 +31,7 @@ class HierarchyDictView:
             r[h.name]["ip"] = {}
             r[h.name]["memories"] = {}
             r[h.name]["hierarchies"] = {}
+            r[h.name]["fullpath"] = h.path
 
         for ip in h.core_obj.values():
             if ip.hierarchy_name in self._mem_dict:
@@ -41,18 +43,27 @@ class HierarchyDictView:
         for hier in h.hierarchies_obj.values():
             self._hierarchy_walker(r[h.name]["hierarchies"], hier)
 
-    def _prune_walker(self, r:Dict)->bool:
+    def _prune_unused_walker(self, r:Dict)->bool:
         """ Walks down through the hierarchy dict, removing anything
         that is empty """
         del_list = []
         for i,h in r["hierarchies"].items():
-            if self._prune_walker(h):
+            if self._prune_unused_walker(h):
                 del_list.append(i)
 
         for i in del_list:
             del r["hierarchies"][i]
 
         return len(r["ip"])==0 and len(r["memories"])==0 and len(r["hierarchies"])==0
+
+    def _replicate_subhierarchies(self, root:Dict, l:Dict)->None:
+        """ The original hierarchy dict includes the sub-hierarchies
+        of other hierarchies at the root of the hierarchy_dict.
+        This walks through and appends the sub-hierarchies to the root. 
+        """
+        #for hname,h in l["hierarchies"].items():
+        #    root[hname
+
 
     @property
     def hierarchy_dict(self) -> Dict:
@@ -66,7 +77,7 @@ class HierarchyDictView:
             self._hierarchy_walker(repr_dict, hierarchy)      
 
         for item in repr_dict.values():
-            self._prune_walker(item)
+            self._prune_unused_walker(item)
 
         del_list = []
         for i_name, i in repr_dict.items():
