@@ -56,13 +56,14 @@ class HierarchyDictView:
 
         return len(r["ip"])==0 and len(r["memories"])==0 and len(r["hierarchies"])==0
 
-    def _replicate_subhierarchies(self, root:Dict, l:Dict)->None:
+    def _replicate_subhierarchies(self, add_to_root:Dict, l:Dict)->None:
         """ The original hierarchy dict includes the sub-hierarchies
         of other hierarchies at the root of the hierarchy_dict.
         This walks through and appends the sub-hierarchies to the root. 
         """
-        #for hname,h in l["hierarchies"].items():
-        #    root[hname
+        for hname,h in l["hierarchies"].items():
+            add_to_root[h["fullpath"]] = copy.deepcopy(h)
+            self._replicate_subhierarchies(add_to_root=add_to_root, l=h)
 
 
     @property
@@ -86,6 +87,13 @@ class HierarchyDictView:
 
         for d in del_list:
             del repr_dict[d]
+
+        add_to_root = {}
+        for item in repr_dict.values():
+            self._replicate_subhierarchies(add_to_root, item)
+
+        for iname, i in add_to_root.items():
+            repr_dict[iname] = i
 
         return repr_dict
 
