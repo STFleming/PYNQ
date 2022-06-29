@@ -1,26 +1,39 @@
 from typing import Dict, List
+from pydantic import Field
 
 import json
-import copy
 from pynqmetadata import Module, ProcSysCore, SubordinatePort, Hierarchy
 from pynqmetadata.errors import FeatureNotYetImplemented
 
-from .append_drivers_pass import DriverExtension
 from .ip_dict_view import IpDictView
 from .mem_dict_view import MemDictView
+from pynqmetadata import MetadataExtension
 
 def _default_repr(obj):
     return repr(obj)
+
+class HierarchyDriverExetension(MetadataExtension):
+    """Extends the metadata for hierarchies with PYNQ runtime driver information"""
+    driver:object = Field(..., exclude=True, description="the runtime driver for this hierarchy")
+    device:object = Field(..., exclude=True, description="the device this core has been loaded onto")
 
 class HierarchyDictView:
     """
     Provides a hierarchical view over the IP cores in the design using the hierarchical_name
     """
 
-    def __init__(self, module: Module) -> None:
+    def __init__(self, 
+                module: Module, 
+                ip_view:IpDictView, 
+                mem_view:MemDictView, 
+                hierarchy_drivers:object,
+                device:object) -> None:
+
         self._md = module
-        self._ip_dict = IpDictView(self._md)
-        self._mem_dict = MemDictView(self._md)
+        self._ip_dict = ip_view
+        self._mem_dict = mem_view
+        self._hierarchy_drivers = hierarchy_drivers
+        self._device = device
 
     def _hierarchy_walker(self, r:Dict, h:Hierarchy)->None:
         """ recursive walk down the hierarchy h, adding IP
@@ -31,14 +44,19 @@ class HierarchyDictView:
             r[h.name]["ip"] = {}
             r[h.name]["memories"] = {}
             r[h.name]["hierarchies"] = {}
+            r[h.name]["interrupts"] = {}
+            r[h.name]["gpio"] = {}
             r[h.name]["fullpath"] = h.path
+            r[h.name]["md_ref"] = h
 
         for ip in h.core_obj.values():
             if ip.hierarchy_name in self._mem_dict:
-                r[h.name]["memories"][ip.name] = ip.ref
+                name = ip.hierarchy_name.split("/")[-1]
+                r[h.name]["memories"][name] = self._mem_dict[ip.hierarchy_name]
             else:
                 if ip.hierarchy_name in self._ip_dict: 
-                    r[h.name]["ip"][ip.name] = ip.ref
+                    name = ip.hierarchy_name.split("/")[-1]
+                    r[h.name]["ip"][name] = self._ip_dict[ip.hierarchy_name] 
 
         for hier in h.hierarchies_obj.values():
             self._hierarchy_walker(r[h.name]["hierarchies"], hier)
@@ -62,9 +80,38 @@ class HierarchyDictView:
         This walks through and appends the sub-hierarchies to the root. 
         """
         for hname,h in l["hierarchies"].items():
-            add_to_root[h["fullpath"]] = copy.deepcopy(h)
+            add_to_root[h["fullpath"]] = h
             self._replicate_subhierarchies(add_to_root=add_to_root, l=h)
 
+    def _assign_drivers(self, hier_dict:Dict)->None:
+        """Assigns drivers to the hierarchy if the pattern matches
+        in the driver class.
+        
+        Uses metadata extensions to append the driver information. First
+        checks to see that there is not already a driver assigned."""
+        for hier in hier_dict["hierarchies"].values():
+            self._assign_drivers(hier_dict=hier)
+
+        if "driver" not in hier_dict["md_ref"].ext:
+            driver = None
+            for hip in self._hierarchy_drivers:
+                if hip.checkhierarchy(hier_dict):
+                    driver = hip
+                    break #taken 
+            hier_dict["md_ref"].ext["driver"] = HierarchyDriverExetension(device=self._device, driver=driver)
+            hier_dict["device"] = self._device
+            hier_dict["driver"] = driver 
+        else:
+            hier_dict["device"] = hier_dict["md_ref"].ext["driver"].device 
+            hier_dict["driver"] = hier_dict["md_ref"].ext["driver"].driver 
+
+    def _cleanup_metadata_hierarchy_references(self, hier_dict:Dict)->None:
+        """"Removes any reference to the metadata hierarchy objects from
+        the dictionary"""
+        if "md_ref" in hier_dict:
+            del hier_dict["md_ref"]
+        for hier in hier_dict["hierarchies"].values():
+            self._cleanup_metadata_hierarchy_references(hier)
 
     @property
     def hierarchy_dict(self) -> Dict:
@@ -83,7 +130,7 @@ class HierarchyDictView:
         del_list = []
         for i_name, i in repr_dict.items():
             if len(i["ip"])==0 and len(i["memories"])==0 and len(i["hierarchies"])==0:
-                    del_list.append(i_name)
+                del_list.append(i_name)
 
         for d in del_list:
             del repr_dict[d]
@@ -94,6 +141,12 @@ class HierarchyDictView:
 
         for iname, i in add_to_root.items():
             repr_dict[iname] = i
+
+        for item in repr_dict.values(): 
+            self._assign_drivers(item)
+
+        for item in repr_dict.values():
+            self._cleanup_metadata_hierarchy_references(item)
 
         return repr_dict
 

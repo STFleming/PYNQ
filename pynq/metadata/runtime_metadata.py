@@ -13,8 +13,9 @@ class RuntimeMetadata:
     def __init__(self, 
                 md:Module, 
                 ip_drivers:Dict[str, object],
-                default_ip=object,
-                device=object
+                default_ip:object,
+                device:object,
+                hierarchy_drivers:object
     )->None:
         """ The runtime metadata object
             This contains views onto the metadata that are dynamically updated when
@@ -35,7 +36,7 @@ class RuntimeMetadata:
         self.gpio_dict = GpioDictView(self.md)
         self.clock_dict = ClockDictView(self.md)
         self.mem_dict = MemDictView(self.md)
-        self.hierarchy_dict = HierarchyDictView(self.md)
+        self.hierarchy_dict = HierarchyDictView(self.md, self.ip_dict, self.mem_dict, hierarchy_drivers, device)
 
     def __getattr__(self, key):
         """ Overload of __getattr__ to return a driver for an IP
