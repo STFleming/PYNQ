@@ -50,7 +50,6 @@ class InterruptControllersView:
             repr_dict[controller.name]["index"] = 99 
             repr_dict[controller.name]["raw_irq"] = 99 
 
-
         return repr_dict
 
     def items(self):
