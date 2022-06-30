@@ -4,6 +4,7 @@ from .gpio_dict_view import GpioDictView
 from .clock_dict_view import ClockDictView
 from .mem_dict_view import MemDictView
 from .hierarchy_dict_view import HierarchyDictView
+from .interrupt_controllers_view import InterruptControllersView
 from .append_drivers_pass import bind_drivers_to_metadata
 from typing import Dict
 
@@ -39,6 +40,7 @@ class RuntimeMetadata:
         self.clock_dict = ClockDictView(self.md)
         self.mem_dict = MemDictView(self.md)
         self.hierarchy_dict = HierarchyDictView(self.md, self.ip_dict, self.mem_dict, overlay, hierarchy_drivers, default_hierarchy, device)
+        self.interrupt_controllers = InterruptControllersView(self.md)
 
     def __getattr__(self, key):
         """ Overload of __getattr__ to return a driver for an IP
