@@ -36,13 +36,13 @@ class RuntimeMetadata:
          """
         self.md = bind_drivers_to_metadata(md, device=device, ip_drivers=ip_drivers, default_ip=default_ip)
         self.md.refresh()
+        self.interrupt_controllers = InterruptControllersView(self.md)
+        self.interrupt_pins = InterruptPinsView(self.md, self.interrupt_controllers)
         self.ip_dict = IpDictView(self.md)
         self.gpio_dict = GpioDictView(self.md)
         self.clock_dict = ClockDictView(self.md)
         self.mem_dict = MemDictView(self.md)
         self.hierarchy_dict = HierarchyDictView(self.md, self.ip_dict, self.mem_dict, overlay, hierarchy_drivers, default_hierarchy, device)
-        self.interrupt_controllers = InterruptControllersView(self.md)
-        self.interrupt_pins = InterruptPinsView(self.md, self.interrupt_controllers)
 
     def __getattr__(self, key):
         """ Overload of __getattr__ to return a driver for an IP

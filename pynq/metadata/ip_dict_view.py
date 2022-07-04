@@ -1,8 +1,9 @@
-from typing import Dict
+from typing import Dict, List
 
 import json
 from pynqmetadata import Module, ProcSysCore, SubordinatePort, ManagerPort, Core
 from pynqmetadata.errors import FeatureNotYetImplemented, CoreNotFound
+from pynqmetadata import Signal
 
 from .append_drivers_pass import DriverExtension
 
@@ -25,6 +26,15 @@ class IpDictView:
                 return core
         raise CoreNotFound(f"Could not find a processing system for the design when getting the ip_dict_view")
 
+    def _search_for_interrupts(self, core:Core)->List[Signal]:
+        """For a given core return all it's signals that are interrupt pins"""
+        itr_pins = []
+        for port in core.ports.values():
+            for sig in port.signals.values():
+                if "interrupt_index" in sig.ext:
+                    itr_pins.append(sig)
+        return itr_pins
+
     @property
     def ip_dict(self) -> Dict:
         repr_dict = {}
@@ -42,6 +52,13 @@ class IpDictView:
                         repr_dict[dcore.hierarchy_name]["memtype"] = "REGISTER" 
                         repr_dict[dcore.hierarchy_name]["gpio"] = {}
                         repr_dict[dcore.hierarchy_name]["interrupts"] = {}
+
+                        for itr_sig in self._search_for_interrupts(dcore):
+                            repr_dict[dcore.hierarchy_name]["interrupts"][itr_sig.name] = {}
+                            repr_dict[dcore.hierarchy_name]["interrupts"][itr_sig.name]["controller"] = itr_sig.ext["interrupt_index"].controller
+                            repr_dict[dcore.hierarchy_name]["interrupts"][itr_sig.name]["index"] = itr_sig.ext["interrupt_index"].index
+                            repr_dict[dcore.hierarchy_name]["interrupts"][itr_sig.name]["fullpath"] = f"{itr_sig.parent().parent().hierarchy_name}/{itr_sig.name}"
+
                         repr_dict[dcore.hierarchy_name]["parameters"] = {}
                         for param in dcore.parameters.values():
                             repr_dict[dcore.hierarchy_name]["parameters"][param.name] = param.value
