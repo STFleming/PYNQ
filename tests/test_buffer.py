@@ -17,7 +17,6 @@ def device():
     device = MockAllocateDevice('buffer_device')
     yield device
     device.check_allocated()
-    device.close()
 
 
 def test_lifetime_check(device):

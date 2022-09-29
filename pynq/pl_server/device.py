@@ -461,6 +461,7 @@ class Device(metaclass=DeviceMeta):
 
     def close(self):
         """ Deprecated """
+        warnings.warn("PL Server has been deprecated -- this call"
+                "will be removed in a future release")
         pass
-
 
