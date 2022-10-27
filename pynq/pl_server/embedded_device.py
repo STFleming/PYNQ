@@ -188,8 +188,9 @@ class BitstreamHandler:
         xclbin_data = self.get_xclbin_data()
         if hwh_data is not None:
             parser = HWH(hwh_data=hwh_data)
-            if xclbin_data is None:
-                xclbin_data = _create_xclbin(parser.mem_dict)
+            #if xclbin_data is None:
+            #    xclbin_data = _create_xclbin(parser.mem_dict)
+            xclbin_data = _create_xclbin(parser.mem_dict)
             xclbin_parser = XclBin(xclbin_data=xclbin_data)
             _unify_dictionaries(parser, xclbin_parser)
         elif xclbin_data is not None:
